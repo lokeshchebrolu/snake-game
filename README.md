@@ -1,7 +1,7 @@
 # snake-game
 Designing Nokia Mobile Egg eating snake game
 
-![Image of Nokia Snake game](./images/readme/nokia_snake_game.png =250x217)
+![Image of Nokia Snake game](./images/readme/nokia_snake_game.png =250x)
 
 Development is being done completely in C language.
 
