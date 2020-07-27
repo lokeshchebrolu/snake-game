@@ -1,4 +1,4 @@
-/***  Header file inclusion ***/
+/******  Header file inclusion ******/
 #include"../includes/screen.h"
 #include"../includes/snake.h"
 #include<stdio.h>
@@ -7,95 +7,161 @@
 #include<GL/glut.h>
 #include<GL/glu.h>
 
+/****** Local variables ******/
+/* Current movement direction */
 static int move_dir=RIGHT;
+
+/* Current rotation angle to be done */
 static float snake_rot_angle=0.0;
 
+/* Translation co-ordinates for movement of snake */
 static float x_pos,y_pos;
 
-/*** Local function declaration ***/
+/****** Local function declaration ******/
+/* Initialize boundary data */
 void boundary_init(void);
+/* Draws boundary on screen */
 void boundary(void);
+/* Draws next egg on screen */
 void next_egg(void);
+/* Draws a given block on screen */
 void block_print(block shape);
+/* Draws whole snake on screen */
 void snake_print(void);
+/* Draws string on screen */
 void output_string(char *string);
+/* Handles game when snake is dead */
 void dead_fun(void);
+/* Updates snake hit status
+   1. Egg hit : 1 - hit;0 - Not hit
+   2. dead : 1 - hit boundary;0 - inside boundary   */
 void update_hit_status(void);
 
-/*** Globale variable definitions ***/
+/****** Globale variable definitions ******/
+/* Variable to hold the created window id value
+   This is used for closing window */
 int window_id;
+/* Game outer boundary vertices variable */
 block game_boundary;
 
-/*** Global function definitions ***/
+/****** Global function definitions ******/
+/* Function for screen data initialization */
 void screen_init(int *argc,char *argv[])
 {
 	/* OpenGL Init functions */
 	glutInit(argc,argv);
+	
+	/* Screen display mode set to RGB colour and double buffer mode 
+	   Double buffer mode is used for animations */
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
-
+	
+	/* Set Window Initial position */
 	glutInitWindowPosition(WINDOW_POS_X,WINDOW_POS_Y);
+	
+	/* Set Window size in pixels */
 	glutInitWindowSize(WINDOW_SIZE_X,WINDOW_SIZE_Y);
-
+	
+	/* Create window */
 	window_id=glutCreateWindow("Snake Game");
 	
+	/* Set background colour to black */
 	glClearColor(0,0,0,1);
-
+	
+	/* Set display function pointer */
 	glutDisplayFunc(display);
+	
+	/* Set reshape function pointer */
 	glutReshapeFunc(reshape);
+	
+	/* Set timer function pointer 
+	 0 : refresh time set to 0 initially
+	 timer : timer function pointer
+	 0 : argument to timer function */
 	glutTimerFunc(0,timer,0);
+	
+	/* Set specialfunction function pointer */
 	glutSpecialFunc(specialInput);
-
+	
+	/* Initialize bounday data */
 	boundary_init();
-
+	
+	/* Set initial position of snake */
 	x_pos = -BOUNDARY_X;
 	y_pos = 0;
 }
 
-
+/* OpenGL default display function which is used for drawing each frame */
 void display(void)
 {
 	/* Clear frame buffer */
 	glClear(GL_COLOR_BUFFER_BIT);
+	
+	/* Reset matrix to identity matrix */
 	glLoadIdentity();
-
+	
+	/* Draw boundary */
 	boundary();
-
+	
+	/* if snake is not dead */
 	if(!dead)
 	{
+		/* if current egg is not hit */
 		if(!egg_hit)
 		{
+			/* Draw egg */
 			next_egg();
 		}
 		else
 		{
+			/* TBD */
 		}
+		
+		/* Draw snake */
 		snake_print();
 	}
+	/* if snake is dead */
 	else
 	{
+		/* handle dead snake by calling dead handle function */
 		glPushMatrix();
 		dead_fun();
 		glPopMatrix();
 	}
+	
 	/* Displays frame buffer on screen */
 	glFlush();
+	
+	/* Swap double buffers back and forth */
 	glutSwapBuffers();
 }
 
+/* OpenGL default function used when window is resized.
+   Windows all values will be recalibrated after this function called */
 void reshape(int width,int height)
 {
+	/* Set viewport to new width,height of window */
 	glViewport(0,0,(GLsizei)width,(GLsizei)height);
+	
+	/* Change matrix to projection */
 	glMatrixMode(GL_PROJECTION);
+	/* Reset matrix to identity matrix */
 	glLoadIdentity();
+	/* Set 2D Plane vertices */
 	gluOrtho2D(-MAX_X,MAX_Y,-MAX_X,MAX_Y);
+	/* Switch back to modelview matrix */
 	glMatrixMode(GL_MODELVIEW);
 }
 
+/* OpenGL default timer function as per REFRESH_TIME */
 void timer(int arg)
 {
+	/* Sets display flag to call display function in next glutmainloop */
 	glutPostRedisplay();
+	
+	/* Set timer function to itself with 60FPS so it calls itself every 1/60th of second */
 	glutTimerFunc(1000/60,timer,0);
-
+	
+	/* Increment position of snake based on current movement direction */
 	switch(move_dir)
 	{
 		case	UP:
@@ -113,19 +179,24 @@ void timer(int arg)
 		case RIGHT:
 			x_pos += snake_speed;
 			break;
-
+			
+		/* If END is key by USER pressed then close window */
 		case END:
 			glutDestroyWindow(window_id);
 			break;
 	}
+	
+	/* Update snake hit status */
 	update_hit_status();
 }
 
+/* OpenGL default Input capture function Used to read KEY press from keyboard*/
 void specialInput(int key,int x,int y)
 {
+	/* Update new direction based on key pressed by user */
 	switch(key)
 	{
-		case GLUT_KEY_UP:
+		case GLUT_KEY_UP: /* UP arrow key */
 			if(!(move_dir^LEFT) || !(move_dir^RIGHT))
 			{
 				if(!(move_dir^LEFT))
@@ -136,7 +207,7 @@ void specialInput(int key,int x,int y)
 			}
 			break;
 
-		case GLUT_KEY_DOWN:
+		case GLUT_KEY_DOWN: /* DOWN arrow key */
 			if(!(move_dir^LEFT) || !(move_dir^RIGHT))
 			{
 				if(!(move_dir^LEFT))
@@ -147,7 +218,7 @@ void specialInput(int key,int x,int y)
 			}
 			break;
 
-		case GLUT_KEY_LEFT:
+		case GLUT_KEY_LEFT: /* LEFT arrow key */
 			if(!(move_dir^UP) || !(move_dir^DOWN))
 			{
 				if(!(move_dir^UP))
@@ -158,7 +229,7 @@ void specialInput(int key,int x,int y)
 			}
 			break;
 
-		case GLUT_KEY_RIGHT:
+		case GLUT_KEY_RIGHT: /* RIGHT arrow key */
 			if(!(move_dir^UP) || !(move_dir^DOWN))
 			{
 				if(!(move_dir^UP))
@@ -169,13 +240,14 @@ void specialInput(int key,int x,int y)
 			}
 			break;
 
-		case GLUT_KEY_END:
+		case GLUT_KEY_END: /* END key */
 			move_dir=END;
 			break;
 	}
 }
 
-/*** Local function definitions ***/
+/****** Local function definitions ******/
+/* Initialize boundary data */
 void boundary_init(void)
 {
 	/* Empty square formed with 4 lines */
@@ -193,79 +265,114 @@ void boundary_init(void)
 	game_boundary.point[3].y=-BOUNDARY_Y;
 }
 
+/* Draws a given block on screen */
 void block_print(block shape)
 {
+	/* Set draw type to polysgon */
 	glBegin(GL_POLYGON);
-	for(int i=0;i<4;i++)
+	for(int i=0;i<4;i++) /* Loop through 4 vertices and draw */
 		glVertex2f(shape.point[i].x,shape.point[i].y);
+	/* End drawing */
 	glEnd();
 }
 
+/* Draws boundary on screen */
 void boundary(void)
 {
 	glPushMatrix();
+	/* Set draw type to LINE loop */
 	glBegin(GL_LINE_LOOP);
+	/* Draw game boundary */
 	block_print(game_boundary);
+	/* End drawing */
 	glEnd();
 	glPopMatrix();
 }
 
+/* Draws next egg on screen */
 void next_egg(void)
 {
 	glPushMatrix();
-	/* Keep egg at it's position */
+	/* Move egg to it's position */
 	glTranslatef(egg.position.x,egg.position.y,0);
 	glBegin(GL_POLYGON);
+	/* Draw egg */
 	block_print(egg.obst);
 	glEnd();
 	glPopMatrix();
 }
 
+/* Draws whole snake on screen */
 void snake_print(void)
 {
 	glPushMatrix();
+	
+	/****** Draw Head ******/
+	/* Keep head position */
 	glTranslatef(x_pos,y_pos,0.0);
+	
+	/* Rotate head with current angle if needed to rotate */
 	glRotatef(snake_rot_angle,0.0,0.0,1.0);
+	
+	/* Set colour to NOSE,SKULL as white */
 	glColor3f(WHITE);
-	/*** Draw Head ***/
-	/* Nose */
+	/* Draw Nose */
 	block_print(head.nose);
-	/*Skull*/
+	/* Draw Skull */
 	block_print(head.skull);
-	/* Eyes */
+	/* Draw Eyes */
+	/* Set colour to eyes as black */
 	glColor3f(BLACK);
+	/* Set pixel size of eye points */
 	glPointSize(head.eye_size);
+	/* Set draw type to Points */
 	glBegin(GL_POINTS);
 	glVertex2f(head.eye[0].x,head.eye[0].y);/* Left Eye */
 	glVertex2f(head.eye[1].x,head.eye[1].y);/* Right Eye */
+	/* Set back foreground colour to white */
 	glColor3f(WHITE);
 	glEnd();
 	glPopMatrix();
 }
 
+/* Draws string on screen */
 void output_string(char *string)
 {
 	int x=0,length=strlen(string);
 	x=length/2;
+	
+	/* Set text colour to black */
 	glColor3f(0.0f,0.0f,0.0f);
+	
+	/* Raster sub pixel level for text writing */
 	glRasterPos2f(-x*2,0);
+	
+	/* Loop through each letter and print it in bitmap format */
 	for(int i=0;i<length;i++)
 	{
 		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12,string[i]);
 	}
 }
 
+/* Handles game when snake is dead */
 void dead_fun(void)
 {
 	char *msg="GAME OVER";
 	int msg_len=strlen(msg);
 	float rect_index=-msg_len*2;
+	
+	/* Set text background rectangle colour to white */
 	glColor3f(1.0f,1.0f,1.0f);	
+	/* Draw rectangle */
 	glRectf(-rect_index,5,rect_index,-5);
+	
+	/* Print 'game over' on rectangle */
 	output_string("GAME OVER");
 }
 
-
+/* Updates snake hit status
+   1. Egg hit : 1 - hit;0 - Not hit
+   2. dead : 1 - hit boundary;0 - inside boundary   */
 void update_hit_status(void)
 {
 	float head_border = 0.0;
@@ -351,34 +458,5 @@ void update_hit_status(void)
 			break;
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
