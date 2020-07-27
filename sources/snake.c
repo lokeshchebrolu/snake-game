@@ -12,8 +12,8 @@
 #define EGG_X_DEFAULT (0.8)
 #define EGG_Y_DEFAULT (0.8)
 /* Egg initial position of origin */
-#define EGG_POS_X_DEFAULT (20.0)
-#define EGG_POS_Y_DEFAULT (20.0)
+#define EGG_POS_X_DEFAULT (10.0)
+#define EGG_POS_Y_DEFAULT (10.0)
 
 /* Head symbols */
 /* Eye point positions */
