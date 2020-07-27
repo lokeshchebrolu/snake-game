@@ -7,7 +7,6 @@
 
 /*** Symbols ***/
 /* 2D grid plane size */
-/* Game outer boundary values */
 /* --------------------------------- */
 /*|       (0,MAX_Y)|                |*/
 /*|                |                |*/
@@ -27,7 +26,7 @@
 #define MAX_Y 50.0f /* Y-axix maximum value */
 
 
-/* Game outer boundary values */
+/* Game outer boundary values inside 2D grid plane*/
 /* --------------------------------- */
 /*|                                 |*/
 /*|                                 |*/
@@ -44,8 +43,8 @@
 /*|                                 |*/
 /*|                                 |*/
 /* --------------------------------- */
-#define BOUNDARY_X (MAX_X-3) /* X-axix maximum value */
-#define BOUNDARY_Y (MAX_Y-3) /* Y-axix maximum value */
+#define BOUNDARY_X (MAX_X-3) /* X-axix Boundary value */
+#define BOUNDARY_Y (MAX_Y-3) /* Y-axix Boundary value */
 
 /* Window Initial position co-ordinates */
 #define WINDOW_POS_X 0
