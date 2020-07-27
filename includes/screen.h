@@ -22,8 +22,8 @@
 /*|                |                |*/
 /*|      (0,-MAX_Y)|                |*/
 /* --------------------------------- */
-#define MAX_X 50.0f	/* X-axix maximum value */
-#define MAX_Y 50.0f /* Y-axix maximum value */
+#define MAX_X 30.0f	/* X-axix maximum value */
+#define MAX_Y 30.0f /* Y-axix maximum value */
 
 
 /* Game outer boundary values inside 2D grid plane*/
@@ -51,8 +51,8 @@
 #define WINDOW_POS_Y 0
 
 /* Window SIZE in Pixels */
-#define WINDOW_SIZE_X 400
-#define WINDOW_SIZE_Y 400
+#define WINDOW_SIZE_X 600
+#define WINDOW_SIZE_Y 600
 
 /* Macros for colours in R,G,B values */
 #define BLACK 0,0,0
