@@ -2,6 +2,7 @@
 #include"../includes/screen.h"
 #include"../includes/snake.h"
 #include<stdio.h>
+#include<math.h>
 #include<string.h>
 #include<GL/gl.h>
 #include<GL/glut.h>
@@ -29,19 +30,22 @@ void block_print(block shape);
 /* Draws whole snake on screen */
 void snake_print(void);
 /* Draws string on screen */
-void output_string(char *string);
+void output_string(int x,int y,char *string,float color[3]);
 /* Handles game when snake is dead */
 void dead_fun(void);
 /* Updates snake hit status
    1. Egg hit : 1 - hit;0 - Not hit
    2. dead : 1 - hit boundary;0 - inside boundary   */
 void update_hit_status(void);
+/* Updated new position of egg */
+void new_egg(void);
+
 
 /****** Globale variable definitions ******/
 /* Variable to hold the created window id value
    This is used for closing window */
 int window_id;
-/* Game outer boundary vertices variable */
+/* Game boundary vertices variable */
 block game_boundary;
 
 /****** Global function definitions ******/
@@ -99,9 +103,6 @@ void display(void)
 	/* Reset matrix to identity matrix */
 	glLoadIdentity();
 	
-	/* Draw boundary */
-	boundary();
-	
 	/* if snake is not dead */
 	if(!dead)
 	{
@@ -113,11 +114,17 @@ void display(void)
 		}
 		else
 		{
-			/* TBD */
+			egg_hit=0;
+			snake_length++;
+			new_egg();
 		}
+		
+		/* Draw boundary */
+		boundary();
 		
 		/* Draw snake */
 		snake_print();
+
 	}
 	/* if snake is dead */
 	else
@@ -185,7 +192,8 @@ void timer(int arg)
 			glutDestroyWindow(window_id);
 			break;
 	}
-	
+
+
 	/* Update snake hit status */
 	update_hit_status();
 }
@@ -263,6 +271,7 @@ void boundary_init(void)
 	
 	game_boundary.point[3].x=BOUNDARY_X;
 	game_boundary.point[3].y=-BOUNDARY_Y;
+
 }
 
 /* Draws a given block on screen */
@@ -279,12 +288,10 @@ void block_print(block shape)
 /* Draws boundary on screen */
 void boundary(void)
 {
-	glPushMatrix();
-	/* Set draw type to LINE loop */
+	/* draw GAME_BOUNDARY */
+	glPushMatrix();	
 	glBegin(GL_LINE_LOOP);
-	/* Draw game boundary */
 	block_print(game_boundary);
-	/* End drawing */
 	glEnd();
 	glPopMatrix();
 }
@@ -336,16 +343,14 @@ void snake_print(void)
 }
 
 /* Draws string on screen */
-void output_string(char *string)
+void output_string(int x,int y,char *string,float color[3])
 {
-	int x=0,length=strlen(string);
-	x=length/2;
-	
+	int length=strlen(string);
 	/* Set text colour to black */
-	glColor3f(0.0f,0.0f,0.0f);
+	glColor3f(color[0],color[1],color[2]);
 	
 	/* Raster sub pixel level for text writing */
-	glRasterPos2f(-x*2,0);
+	glRasterPos2f(x,y);
 	
 	/* Loop through each letter and print it in bitmap format */
 	for(int i=0;i<length;i++)
@@ -366,8 +371,10 @@ void dead_fun(void)
 	/* Draw rectangle */
 	glRectf(-rect_index,5,rect_index,-5);
 	
+	float color[3]={BLACK};
+
 	/* Print 'game over' on rectangle */
-	output_string("GAME OVER");
+	output_string(-(MAX_X/2),0.0,"GAME OVER",color);
 }
 
 /* Updates snake hit status
@@ -383,80 +390,104 @@ void update_hit_status(void)
 	float egg_left_edge = 0.0;
 	float egg_right_edge = 0.0;
 
+	typedef struct hit_status
+	{
+		unsigned int head_border_hit:1;
+		unsigned int head_left_edge_hit:1;
+		unsigned int head_right_edge_hit:1;
+		unsigned int border_hit:1;
+	}hit_status;
+
+	hit_status hit;
+
 	switch(move_dir)
 	{
 		case UP:
 			head_border = y_pos+(head.nose.point[0].x);
 			head_left_edge = x_pos-(head.nose.point[0].y);
-			head_right_edge = x_pos+(-head.nose.point[3].y);
+			head_right_edge = x_pos+(-(head.nose.point[3].y));
 
-			egg_border = (egg.position.y)-(-egg.obst.point[3].y);
-			egg_left_edge = (egg.position.x)-(-egg.obst.point[2].x);
+			egg_border = (egg.position.y)-(-(egg.obst.point[3].y));
+			egg_left_edge = (egg.position.x)-(-(egg.obst.point[2].x));
 			egg_right_edge = (egg.position.x)+(egg.obst.point[3].x);
 
-			if((head_border >= egg_border) &&
-					(((head_left_edge>= egg_left_edge) && (head_left_edge<= egg_right_edge)) ||
-					((head_right_edge>= egg_left_edge) && (head_right_edge<= egg_right_edge))))
-				egg_hit=1;
+			hit.head_border_hit = (head_border >= egg_border);
+			hit.head_left_edge_hit = ((head_left_edge >= egg_left_edge) && (head_left_edge <= egg_right_edge));
+			hit.head_right_edge_hit = ((head_right_edge >= egg_left_edge) && (head_right_edge <= egg_right_edge));
+			hit.border_hit = (head_border >= (game_boundary.point[0].y));
 
-			if(head_border >= (game_boundary.point[0].y))
-				dead=1;
 			break;
 
 		case DOWN:
 			head_border = y_pos-(head.nose.point[0].x);
 			head_left_edge = x_pos+(head.nose.point[0].y);
-			head_right_edge = x_pos-(-head.nose.point[3].y);
+			head_right_edge = x_pos-(-(head.nose.point[3].y));
 
 			egg_border = (egg.position.y)+(egg.obst.point[0].y);
 			egg_left_edge = (egg.position.x)+(egg.obst.point[0].x);
-			egg_right_edge = (egg.position.x)-(-egg.obst.point[1].x);
+			egg_right_edge = (egg.position.x)-(-(egg.obst.point[1].x));
 
-			if((head_border <= egg_border) &&
-					(((head_left_edge<= egg_left_edge) && (head_left_edge>= egg_right_edge)) ||
-					((head_right_edge<= egg_left_edge) && (head_right_edge>= egg_right_edge))))
-				egg_hit=1;
-
-			if(head_border <= (game_boundary.point[3].y))
-				dead=1;
+			hit.head_border_hit = (head_border <= egg_border);
+			hit.head_left_edge_hit = ((head_left_edge <= egg_left_edge) && (head_left_edge >= egg_right_edge));
+			hit.head_right_edge_hit = ((head_right_edge <= egg_left_edge) && (head_right_edge >= egg_right_edge));
+			hit.border_hit = (head_border <= (game_boundary.point[3].y));
+			
 			break;
 
 		case LEFT:
 			head_border = x_pos-(head.nose.point[0].x);
 			head_left_edge = y_pos-(head.nose.point[0].y);
-			head_right_edge = y_pos+(-head.nose.point[3].y);
+			head_right_edge = y_pos+(-(head.nose.point[3].y));
 
 			egg_border = (egg.position.x)+(egg.obst.point[0].x);
-			egg_left_edge = (egg.position.y)-(-egg.obst.point[3].y);
+			egg_left_edge = (egg.position.y)-(-(egg.obst.point[3].y));
 			egg_right_edge = (egg.position.y)+(egg.obst.point[0].y);
 
-			if((head_border <= egg_border) &&
-					(((head_left_edge>= egg_left_edge) && (head_left_edge<= egg_right_edge)) ||
-					((head_right_edge>= egg_left_edge) && (head_right_edge<= egg_right_edge))))
-				egg_hit=1;		
-
-			if(head_border <= (game_boundary.point[1].x))
-				dead=1;
+			hit.head_border_hit = (head_border <= egg_border);
+			hit.head_left_edge_hit = ((head_left_edge >= egg_left_edge) && (head_left_edge <= egg_right_edge));
+			hit.head_right_edge_hit = ((head_right_edge >= egg_left_edge) && (head_right_edge <= egg_right_edge));
+			hit.border_hit = (head_border <= (game_boundary.point[1].x));
+			
 			break;
 
 		case RIGHT:
 			head_border = x_pos+(head.nose.point[0].x);
 			head_left_edge = y_pos+(head.nose.point[0].y);
-			head_right_edge = y_pos-(-head.nose.point[3].y);
+			head_right_edge = y_pos-(-(head.nose.point[3].y));
 
-			egg_border = (egg.position.x)-(-egg.obst.point[1].x);
-			egg_left_edge = (egg.position.y)+(egg.obst.point[0].y);
-			egg_right_edge = (egg.position.y)-(-egg.obst.point[3].y);
+			egg_border = (egg.position.x)-(-(egg.obst.point[1].x));
+			egg_left_edge = (egg.position.y)+(egg.obst.point[1].y);
+			egg_right_edge = (egg.position.y)-(-(egg.obst.point[2].y));
 
-			if((head_border >= egg_border) &&
-					(((head_left_edge<= egg_left_edge) && (head_left_edge>= egg_right_edge)) ||
-					((head_right_edge>= egg_left_edge) && (head_right_edge>= egg_right_edge))))
-				egg_hit=1;
-
-			if(head_border >= (game_boundary.point[0].x))
-				dead=1;			
+			hit.head_border_hit = (head_border >= egg_border);
+			hit.head_left_edge_hit = ((head_left_edge <= egg_left_edge) && (head_left_edge >= egg_right_edge));
+			hit.head_right_edge_hit = ((head_right_edge <= egg_left_edge) && (head_right_edge >= egg_right_edge));
+			hit.border_hit = (head_border >= (game_boundary.point[0].x));
+			
 			break;
 	}
+
+	egg_hit = (hit.head_border_hit && (hit.head_left_edge_hit || hit.head_right_edge_hit));
+	
+	dead = (hit.border_hit);
 }
+
+
+void new_egg(void)
+{
+	egg.position.x = rand();
+	egg.position.y = rand();
+
+	int sign = rand();
+	if(sign&0)
+		sign = 1;
+	else
+		sign = -1;
+
+	egg.position.x = fmod(((sign)*(egg.position.x)),(MAX_X-egg_size));
+	egg.position.y = fmod(((sign)*(egg.position.y)),(MAX_Y-egg_size));
+}
+
+
 
 

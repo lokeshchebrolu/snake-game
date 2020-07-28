@@ -5,12 +5,12 @@
 #include<stdlib.h>
 
 /****** Local symbols ******/
-#define SNAKE_SPEED_DEFAULT (0.2)
+#define SNAKE_SPEED_DEFAULT (0.5)
 #define SNAKE_LENGTH_DEFAULT (1)
 
 /* 1st quadrant co-ordinates of EGG in 2D Plan */
-#define EGG_X_DEFAULT (0.8)
-#define EGG_Y_DEFAULT (0.8)
+#define EGG_X_DEFAULT (1.0)
+#define EGG_Y_DEFAULT (1.0)
 /* Egg initial position of origin */
 #define EGG_POS_X_DEFAULT (10.0)
 #define EGG_POS_Y_DEFAULT (10.0)
@@ -21,7 +21,7 @@
 #define HEAD_EYE_Y (0.5)
 
 /* 1st quadrant co-ordinates of NOSE in 2D Plan */
-#define HEAD_NOSE_X (0.0)
+#define HEAD_NOSE_X (1.0)
 #define HEAD_NOSE_Y (1.0)
 
 /* 1st quadrant co-ordinates of SKULL in 2D Plan */
@@ -91,12 +91,12 @@ void snake_init(void)
 
 	head.nose.point[0].x = HEAD_NOSE_X;
 	head.nose.point[0].y = HEAD_NOSE_Y;
-	head.nose.point[1].x = HEAD_NOSE_X;
-	head.nose.point[1].y = -HEAD_NOSE_Y;
-	head.nose.point[2].x = HEAD_NOSE_X+1;
+	head.nose.point[1].x = 0.0;
+	head.nose.point[1].y = HEAD_NOSE_Y;
+	head.nose.point[2].x = 0.0;
 	head.nose.point[2].y = -HEAD_NOSE_Y;
-	head.nose.point[3].x = HEAD_NOSE_X+1;
-	head.nose.point[3].y = HEAD_NOSE_Y;
+	head.nose.point[3].x = HEAD_NOSE_X;
+	head.nose.point[3].y = -HEAD_NOSE_Y;
 
 	head.skull.point[0].x = HEAD_SKULL_X;
 	head.skull.point[0].y = HEAD_SKULL_Y;

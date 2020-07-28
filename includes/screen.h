@@ -27,24 +27,25 @@
 
 
 /* Game outer boundary values inside 2D grid plane*/
-/* --------------------------------- */
+/* _________________________________ */
+/*|           SCORE_BOARD           |*/
+/*|_________________________________|*/
+/*|                                 |*/
+/*|                                 |*/
+/*|                                 |*/
+/*|                                 |*/
+/*|                                 |*/
+/*|          GAME_BOUNDARY          |*/
 /*|                                 |*/
 /*|                                 |*/
 /*|                                 |*/
 /*|                                 |*/
 /*|                                 |*/
 /*|                                 |*/
-/*|                                 |*/
-/*|                                 |*/
-/*|                                 |*/
-/*|                                 |*/
-/*|                                 |*/
-/*|                                 |*/
-/*|                                 |*/
-/*|                                 |*/
-/* --------------------------------- */
-#define BOUNDARY_X (MAX_X-3) /* X-axix Boundary value */
-#define BOUNDARY_Y (MAX_Y-3) /* Y-axix Boundary value */
+/*|_________________________________|*/
+
+#define BOUNDARY_X (MAX_X-1) /* X-axix Boundary value */
+#define BOUNDARY_Y (MAX_Y-1) /* Y-axix Boundary value */
 
 /* Window Initial position co-ordinates */
 #define WINDOW_POS_X 0
