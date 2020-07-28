@@ -47,6 +47,8 @@ void new_egg(void);
 int window_id;
 /* Game boundary vertices variable */
 block game_boundary;
+/* Score board boundary vertices variable */
+block score_board_boundary;
 
 /****** Global function definitions ******/
 /* Function for screen data initialization */
@@ -267,10 +269,22 @@ void boundary_init(void)
 	game_boundary.point[1].y=BOUNDARY_Y;
 	
 	game_boundary.point[2].x=-BOUNDARY_X;
-	game_boundary.point[2].y=-BOUNDARY_Y;
+	game_boundary.point[2].y=-(BOUNDARY_Y+SCORE_BOARD_HEIGHT);
 	
 	game_boundary.point[3].x=BOUNDARY_X;
-	game_boundary.point[3].y=-BOUNDARY_Y;
+	game_boundary.point[3].y=-(BOUNDARY_Y+SCORE_BOARD_HEIGHT);
+
+	score_board_boundary.point[0].x = SCORE_BOARD_BOUNDARY_X;
+	score_board_boundary.point[0].y = SCORE_BOARD_BOUNDARY_Y;
+
+	score_board_boundary.point[1].x = -SCORE_BOARD_BOUNDARY_X;
+	score_board_boundary.point[1].y = SCORE_BOARD_BOUNDARY_Y;
+
+	score_board_boundary.point[2].x = -SCORE_BOARD_BOUNDARY_X;
+	score_board_boundary.point[2].y = SCORE_BOARD_BOUNDARY_Y-SCORE_BOARD_HEIGHT;
+
+	score_board_boundary.point[3].x = SCORE_BOARD_BOUNDARY_X;
+	score_board_boundary.point[3].y = SCORE_BOARD_BOUNDARY_Y-SCORE_BOARD_HEIGHT;
 
 }
 
@@ -288,12 +302,24 @@ void block_print(block shape)
 /* Draws boundary on screen */
 void boundary(void)
 {
+	/* draw SCORE_BOARD BOUNDARY */
+	glPushMatrix();	
+	glBegin(GL_LINE_LOOP);
+	block_print(score_board_boundary);
+	glEnd();
+	glPopMatrix();
+	
 	/* draw GAME_BOUNDARY */
 	glPushMatrix();	
 	glBegin(GL_LINE_LOOP);
 	block_print(game_boundary);
 	glEnd();
 	glPopMatrix();
+
+	char score_string[12];
+	sprintf(score_string,"SCORE : %d",snake_length);
+	float color[3]={WHITE};
+	output_string(MAX_X-15,MAX_Y-3,score_string,color);
 }
 
 /* Draws next egg on screen */

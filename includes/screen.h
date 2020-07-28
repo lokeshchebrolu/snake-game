@@ -22,8 +22,8 @@
 /*|                |                |*/
 /*|      (0,-MAX_Y)|                |*/
 /* --------------------------------- */
-#define MAX_X 30.0f	/* X-axix maximum value */
-#define MAX_Y 30.0f /* Y-axix maximum value */
+#define MAX_X 50.0f	/* X-axix maximum value */
+#define MAX_Y 50.0f /* Y-axix maximum value */
 
 
 /* Game outer boundary values inside 2D grid plane*/
@@ -45,7 +45,11 @@
 /*|_________________________________|*/
 
 #define BOUNDARY_X (MAX_X-1) /* X-axix Boundary value */
-#define BOUNDARY_Y (MAX_Y-1) /* Y-axix Boundary value */
+#define BOUNDARY_Y (MAX_Y-6) /* Y-axix Boundary value */
+
+#define SCORE_BOARD_BOUNDARY_X (MAX_X-1)
+#define SCORE_BOARD_BOUNDARY_Y (MAX_Y-1)
+#define SCORE_BOARD_HEIGHT (4)
 
 /* Window Initial position co-ordinates */
 #define WINDOW_POS_X 0
@@ -71,6 +75,7 @@ extern int window_id;
 
 /* Game outer boundary vertices variable */
 extern block game_boundary;
+extern block score_board_boundary;
 
 /*** Global function declarations  ***/
 /* Function for screen data initialization */

@@ -5,7 +5,7 @@
 #include<stdlib.h>
 
 /****** Local symbols ******/
-#define SNAKE_SPEED_DEFAULT (0.5)
+#define SNAKE_SPEED_DEFAULT (0.25)
 #define SNAKE_LENGTH_DEFAULT (1)
 
 /* 1st quadrant co-ordinates of EGG in 2D Plan */
