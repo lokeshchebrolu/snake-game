@@ -25,6 +25,12 @@
 #define MAX_X 50.0f	/* X-axix maximum value */
 #define MAX_Y 50.0f /* Y-axix maximum value */
 
+/* Quadrants */
+#define FIRST_QUADRANT	1
+#define SECOND_QUADRANT	2
+#define THIRD_QUADRANT	3
+#define FOURTH_QUADRANT	4
+
 
 /* Game outer boundary values inside 2D grid plane*/
 /* _________________________________ */

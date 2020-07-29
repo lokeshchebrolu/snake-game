@@ -3,6 +3,7 @@
 #include"../includes/snake.h"
 #include<stdio.h>
 #include<math.h>
+#include<time.h>
 #include<string.h>
 #include<GL/gl.h>
 #include<GL/glut.h>
@@ -39,8 +40,16 @@ void dead_fun(void);
 void update_hit_status(void);
 /* Updated new position of egg */
 void new_egg(void);
+/* Quadrant type of vertex */
+int quadrant_of_vertex(vertex ver);
+/* Make a number positive */
+float make_positive(float val);
+/* Make a number negative */
+float make_negative(float val);
+/* Generates two randome values less than given modulo_val */
+void rand_val(int *rand,int modulo_val);
 
-
+	
 /****** Globale variable definitions ******/
 /* Variable to hold the created window id value
    This is used for closing window */
@@ -501,19 +510,111 @@ void update_hit_status(void)
 
 void new_egg(void)
 {
-	egg.position.x = rand();
-	egg.position.y = rand();
+	int next_quadrant = 0;
+	int rand[2];
 
-	int sign = rand();
-	if(sign&0)
-		sign = 1;
-	else
-		sign = -1;
+	rand_val(&rand,4);
+	next_quadrant = rand[0]+1;
+	
+	switch(quadrant_of_vertex(egg.position))
+	{
+		case	FIRST_QUADRANT :
+			if(!(next_quadrant^FIRST_QUADRANT))
+				next_quadrant = THIRD_QUADRANT;
+			break;
 
-	egg.position.x = fmod(((sign)*(egg.position.x)),(MAX_X-egg_size));
-	egg.position.y = fmod(((sign)*(egg.position.y)),(MAX_Y-egg_size));
+		case	SECOND_QUADRANT :
+			if(!(next_quadrant^SECOND_QUADRANT))
+				next_quadrant = FOURTH_QUADRANT;
+				break;
+
+		case	THIRD_QUADRANT :
+			if(!(next_quadrant^THIRD_QUADRANT))
+				next_quadrant = FIRST_QUADRANT;
+				break;
+
+		case	FOURTH_QUADRANT :
+			if(!(next_quadrant^FOURTH_QUADRANT))
+				next_quadrant = SECOND_QUADRANT;
+				break;
+	}
+
+	rand_val(&rand,MAX_X-egg_size);
+	egg.position.x=(float)rand[0];
+	egg.position.y=(float)rand[1];
+	switch(next_quadrant)
+	{
+		case	FIRST_QUADRANT :
+			egg.position.x = make_positive(egg.position.x);
+			egg.position.y = make_positive(egg.position.y);
+			break;
+
+		case	SECOND_QUADRANT :
+			egg.position.x = make_negative(egg.position.x);
+			egg.position.y = make_positive(egg.position.y);
+				break;
+
+		case	THIRD_QUADRANT :
+			egg.position.x = make_negative(egg.position.x);
+			egg.position.y = make_negative(egg.position.y);
+				break;
+
+		case	FOURTH_QUADRANT :
+			egg.position.x = make_positive(egg.position.x);
+			egg.position.y = make_negative(egg.position.y);
+				break;
+	}
 }
 
+int quadrant_of_vertex(vertex ver)
+{
+	float x = ver.x;
+	float y = ver.y;
 
+	if((x>=0) && (y>=0))
+		return FIRST_QUADRANT;
+	if((x<0) && (y>0))
+		return SECOND_QUADRANT;
+	if((x<0) && (y<0))
+		return THIRD_QUADRANT;
+	if((x>=0) && (y<0))
+		return FOURTH_QUADRANT;
 
+	return 0;
+}
 
+float make_positive(float val)
+{
+	if(val<0)
+		val *= -1;
+	return val;
+}
+
+float make_negative(float val)
+{
+	if(val>0)
+		val *= -1;
+	return val;
+}
+
+void rand_val(int *rand,int modulo_val)
+{
+	FILE *fp;
+	char *command="date";
+	char output[29];
+	char val[5];
+
+	fp = popen(command,"r");
+	fscanf(fp,"%s %s %s %s",output,output+3,output+6,output+8);
+	pclose(fp);
+
+	sprintf(val,"%c%c%c%c",output[11],output[12],output[14],output[15]);
+	rand[0]=atoi(val)%modulo_val;
+	for(int i=i,j=3;i<j;i++,j--)
+	{
+		char temp = val[i];
+		val[i] = val[j];
+		val[j] = temp;
+	}
+	rand[1]=atoi(val)%modulo_val;
+}
