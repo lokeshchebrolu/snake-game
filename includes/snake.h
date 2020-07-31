@@ -12,8 +12,10 @@
 #define DOWN 2
 #define LEFT 3
 #define RIGHT 4
-#define END -1
+#define END 5
 
+#define SNAKE_SPEED_DEFAULT (0.25)
+#define SNAKE_LENGTH_DEFAULT (1)
 
 /*** Variables ***/
 /* Speed of snake in no.of co-ordinates it

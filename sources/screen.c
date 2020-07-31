@@ -5,13 +5,31 @@
 #include<math.h>
 #include<time.h>
 #include<string.h>
+#include<sys/types.h>
+#include<sys/stat.h>
+#include<fcntl.h>
 #include<GL/gl.h>
 #include<GL/glut.h>
 #include<GL/glu.h>
 
+/* Local symbols */
+#define SCREEN_MATRIX_X ((int)(MAX_X/SNAKE_SPEED_DEFAULT)*2)+1
+#define SCREEN_MATRIX_Y ((int)(MAX_Y/SNAKE_SPEED_DEFAULT)*2)+1
+
+#define CURRENT_HEAD_X head.position.x
+#define CURRENT_HEAD_Y head.position.y
+
+/* Local types */
+typedef struct screen_matrix_cell
+{
+	unsigned int cell:3;
+	float angle;
+}screen_matrix_cell;
+
 /****** Local variables ******/
 /* Current movement direction */
 static int move_dir=RIGHT;
+static screen_matrix_cell screen_matrix[SCREEN_MATRIX_X][SCREEN_MATRIX_Y];
 
 /* Current rotation angle to be done */
 static float snake_rot_angle=0.0;
@@ -48,9 +66,17 @@ float make_positive(float val);
 float make_negative(float val);
 /* Generates two randome values less than given modulo_val */
 void rand_val(int *rand,int modulo_val);
-
+/* screen_matrix initialisation */
+void screen_matrix_init(void);
+/* screen_matrix update */
+void screen_matrix_update(float x,float y,int dir,float angle);
+/* screen_matrix value at co-ordinates */
+int screen_matrix_dir(float x,float y);
+/* screen_matrix value at co-ordinates */
+float screen_matrix_angle(float x,float y);
 	
-/****** Globale variable definitions ******/
+
+	/****** Global variable definitions ******/
 /* Variable to hold the created window id value
    This is used for closing window */
 int window_id;
@@ -100,9 +126,6 @@ void screen_init(int *argc,char *argv[])
 	/* Initialize bounday data */
 	boundary_init();
 	
-	/* Set initial position of snake */
-	x_pos = -BOUNDARY_X;
-	y_pos = 0;
 }
 
 /* OpenGL default display function which is used for drawing each frame */
@@ -126,7 +149,7 @@ void display(void)
 		else
 		{
 			egg_hit=0;
-			snake_length++;
+			//snake_length++;
 			new_egg();
 		}
 		
@@ -183,19 +206,23 @@ void timer(int arg)
 	switch(move_dir)
 	{
 		case	UP:
-			y_pos += snake_speed;
+			head.position.y += snake_speed;
+			body[0].position.y += snake_speed;
 			break;
 
 		case DOWN:
-			y_pos -= snake_speed;
+			head.position.y -= snake_speed;
+			body[0].position.y -= snake_speed;
 			break;
 
 		case LEFT:
-			x_pos -= snake_speed;
+			head.position.x -= snake_speed;
+			body[0].position.x -= snake_speed;
 			break;
 
 		case RIGHT:
-			x_pos += snake_speed;
+			head.position.x += snake_speed;
+			body[0].position.x += snake_speed;
 			break;
 			
 		/* If END is key by USER pressed then close window */
@@ -221,7 +248,7 @@ void specialInput(int key,int x,int y)
 					snake_rot_angle += -90.0;
 				else if(!(move_dir^RIGHT))
 					snake_rot_angle += 90.0;
-				move_dir=UP;
+				move_dir=UP;	
 			}
 			break;
 
@@ -262,6 +289,10 @@ void specialInput(int key,int x,int y)
 			move_dir=END;
 			break;
 	}
+
+	if(move_dir^END)/* If direction is not END */
+		screen_matrix_update(CURRENT_HEAD_X,CURRENT_HEAD_Y,move_dir,snake_rot_angle);
+
 }
 
 /****** Local function definitions ******/
@@ -346,14 +377,16 @@ void next_egg(void)
 /* Draws whole snake on screen */
 void snake_print(void)
 {
+	float rot_angle=0.0;
+	/****** Draw Head ******/
 	glPushMatrix();
 	
-	/****** Draw Head ******/
-	/* Keep head position */
-	glTranslatef(x_pos,y_pos,0.0);
+	/* Keep head at it's origin */
+	glTranslatef(CURRENT_HEAD_X,CURRENT_HEAD_Y,0);
 	
 	/* Rotate head with current angle if needed to rotate */
-	glRotatef(snake_rot_angle,0.0,0.0,1.0);
+	rot_angle = screen_matrix_angle(CURRENT_HEAD_X,CURRENT_HEAD_Y);
+	glRotatef(rot_angle,0.0,0.0,1.0);
 	
 	/* Set colour to NOSE,SKULL as white */
 	glColor3f(WHITE);
@@ -374,6 +407,22 @@ void snake_print(void)
 	glColor3f(WHITE);
 	glEnd();
 	glPopMatrix();
+	/************************/
+
+	/******* Draw Body ******/
+	for(int i=0;i<snake_length;i++)
+	{
+		glPushMatrix();
+	
+		/* Keep body at it's origin */
+		glTranslatef(body[i].position.x,body[i].position.y,0);
+
+		glColor3f(WHITE);
+		block_print(body[i].part);
+	
+		glPopMatrix();
+	}
+	/************************/
 }
 
 /* Draws string on screen */
@@ -626,4 +675,92 @@ void rand_val(int *rand,int modulo_val)
 		val[j] = temp;
 	}
 	rand[1]=atoi(val)%modulo_val;
+}
+
+/* screen_matrix initialisation */
+void screen_matrix_init(void)
+{
+	for(int i=0;i<SCREEN_MATRIX_X;i++)
+	{
+		for(int j=0;j<SCREEN_MATRIX_Y;j++)
+		{
+			screen_matrix[i][j].cell = END;
+			screen_matrix[i][j].angle = 0;
+		}
+	}
+	for(int i=0,j=SCREEN_MATRIX_Y/2; i<SCREEN_MATRIX_X ; i++)
+	{
+		screen_matrix[i][j].cell = 0;
+	}
+
+	for(int i=SCREEN_MATRIX_X/2,j=0; j<SCREEN_MATRIX_Y ; j++)
+	{
+		screen_matrix[i][j].cell = 0;
+	}
+}
+
+/* screen_matrix update */
+void screen_matrix_update(float x,float y,int dir,float angle)
+{
+	int i,j;
+
+	x = x/SNAKE_SPEED_DEFAULT;
+	y = y/SNAKE_SPEED_DEFAULT;
+
+	if(x>=0)
+		j = (SCREEN_MATRIX_Y/2)+x;
+	if(x<0)
+		j = (SCREEN_MATRIX_Y/2)-(-x);
+
+	if(y>=0)
+		i = (SCREEN_MATRIX_X/2)-y;
+	if(y<0)
+		i = (SCREEN_MATRIX_X/2)+(-y);
+
+	screen_matrix[i][j].cell = dir;
+	screen_matrix[i][j].angle = angle;
+}
+
+/* screen_matrix direction at co-ordinates */
+int screen_matrix_dir(float x,float y)
+{
+	int i,j;
+	int dir;
+
+	x = x/SNAKE_SPEED_DEFAULT;
+	y = y/SNAKE_SPEED_DEFAULT;
+
+	if(x>=0)
+		j = (SCREEN_MATRIX_Y/2)+x;
+	if(x<0)
+		j = (SCREEN_MATRIX_Y/2)-(-x);
+
+	if(y>=0)
+		i = (SCREEN_MATRIX_X/2)-y;
+	if(y<0)
+		i = (SCREEN_MATRIX_X/2)+(-y);
+
+	dir = screen_matrix[i][j].cell;
+	return dir;
+}
+
+/* screen_matrix value at co-ordinates */
+float screen_matrix_angle(float x,float y)
+{
+	int i,j;
+
+	x = x/SNAKE_SPEED_DEFAULT;
+	y = y/SNAKE_SPEED_DEFAULT;
+
+	if(x>=0)
+		j = (SCREEN_MATRIX_Y/2)+x;
+	if(x<0)
+		j = (SCREEN_MATRIX_Y/2)-(-x);
+
+	if(y>=0)
+		i = (SCREEN_MATRIX_X/2)-y;
+	if(y<0)
+		i = (SCREEN_MATRIX_X/2)+(-y);
+
+	return screen_matrix[i][j].angle;
 }
