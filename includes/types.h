@@ -19,19 +19,18 @@ typedef struct block
 
 /**************************/
 /*    Snake body shape    */
-/*                        */
-/*          ___________   */
-/*         |           |  */
-/*         |    UP     |  */
-/*   ______|___________|  */
-/*  |           |         */
-/*  |   DOWN    |         */
-/*  |___________|         */
+/*      _____________     */
+/*     |             |    */
+/*     |             |    */
+/*     |             |    */
+/*     |             |    */
+/*     |             |    */
+/*     |_____________|    */
 /*                        */
 /**************************/
 typedef struct snake_body
 {
-	block part; /* UP block */
+	block part; /* Body block */
 	vertex position;
 	int number; /* position in whole body */
 	int direction; /* Movement direction */
