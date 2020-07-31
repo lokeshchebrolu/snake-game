@@ -204,7 +204,6 @@ void timer(int arg)
 			break;
 	}
 
-
 	/* Update snake hit status */
 	update_hit_status();
 }
@@ -431,9 +430,15 @@ void update_hit_status(void)
 		unsigned int head_left_edge_hit:1;
 		unsigned int head_right_edge_hit:1;
 		unsigned int border_hit:1;
+		unsigned int pos_in_range:1;
 	}hit_status;
 
 	hit_status hit;
+	hit.head_border_hit = 0;
+	hit.head_left_edge_hit = 0;
+	hit.head_right_edge_hit = 0;
+	hit.border_hit = 0;
+
 
 	switch(move_dir)
 	{
@@ -450,6 +455,7 @@ void update_hit_status(void)
 			hit.head_left_edge_hit = ((head_left_edge >= egg_left_edge) && (head_left_edge <= egg_right_edge));
 			hit.head_right_edge_hit = ((head_right_edge >= egg_left_edge) && (head_right_edge <= egg_right_edge));
 			hit.border_hit = (head_border >= (game_boundary.point[0].y));
+			hit.pos_in_range = (y_pos <= egg.position.y);
 
 			break;
 
@@ -466,6 +472,7 @@ void update_hit_status(void)
 			hit.head_left_edge_hit = ((head_left_edge <= egg_left_edge) && (head_left_edge >= egg_right_edge));
 			hit.head_right_edge_hit = ((head_right_edge <= egg_left_edge) && (head_right_edge >= egg_right_edge));
 			hit.border_hit = (head_border <= (game_boundary.point[3].y));
+			hit.pos_in_range = (y_pos >= egg.position.y);
 			
 			break;
 
@@ -482,6 +489,7 @@ void update_hit_status(void)
 			hit.head_left_edge_hit = ((head_left_edge >= egg_left_edge) && (head_left_edge <= egg_right_edge));
 			hit.head_right_edge_hit = ((head_right_edge >= egg_left_edge) && (head_right_edge <= egg_right_edge));
 			hit.border_hit = (head_border <= (game_boundary.point[1].x));
+			hit.pos_in_range = (x_pos >= egg.position.x);
 			
 			break;
 
@@ -498,11 +506,12 @@ void update_hit_status(void)
 			hit.head_left_edge_hit = ((head_left_edge <= egg_left_edge) && (head_left_edge >= egg_right_edge));
 			hit.head_right_edge_hit = ((head_right_edge <= egg_left_edge) && (head_right_edge >= egg_right_edge));
 			hit.border_hit = (head_border >= (game_boundary.point[0].x));
+			hit.pos_in_range = (x_pos <= egg.position.x);
 			
 			break;
 	}
 
-	egg_hit = (hit.head_border_hit && (hit.head_left_edge_hit || hit.head_right_edge_hit));
+	egg_hit = (hit.head_border_hit && (hit.head_left_edge_hit || hit.head_right_edge_hit))&& (hit.pos_in_range);
 	
 	dead = (hit.border_hit);
 }
