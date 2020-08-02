@@ -5,8 +5,6 @@
 #include<stdlib.h>
 
 /****** Local symbols ******/
-#define SNAKE_SPEED_DEFAULT (0.25)
-#define SNAKE_LENGTH_DEFAULT (1)
 
 /* 1st quadrant co-ordinates of EGG in 2D Plan */
 #define EGG_X_DEFAULT (1.0)
@@ -28,14 +26,22 @@
 #define HEAD_SKULL_X (0.0)
 #define HEAD_SKULL_Y (1.5)
 
+/* Head default origin position */
+#define HEAD_POS_X_DEFAULT (-BOUNDARY_X/2)
+#define HEAD_POS_Y_DEFAULT (0.0)
+
 /* Head default direction */
 #define HEAD_DIRECTION_DEFAULT RIGHT
 
 
 /* Body symbols */
 /* 1st quadrant co-ordinates of body in 2D Plan */
-#define BODY_X (3.0)
-#define BODY_Y (1.5)
+#define BODY_X (HEAD_NOSE_X)
+#define BODY_Y (HEAD_NOSE_Y)
+
+/* Body default origin position */
+#define BODY_POS_X_DEFAULT (HEAD_POS_X_DEFAULT-(SNAKE_SPEED_DEFAULT*9))
+#define BODY_POS_Y_DEFAULT (0.0)
 
 #define YES (1)
 #define NO (0)
@@ -106,8 +112,14 @@ void snake_init(void)
 	head.skull.point[2].y = -HEAD_SKULL_Y;
 	head.skull.point[3].x = HEAD_SKULL_X;
 	head.skull.point[3].y = -HEAD_SKULL_Y;
-	
+
+	head.position.x = HEAD_POS_X_DEFAULT;
+	head.position.y = HEAD_POS_Y_DEFAULT;
+
+	head.direction = HEAD_DIRECTION_DEFAULT;
+
 	/* Initialize co-ordinates of body with default length */
+	
 	body = (snake_body*)realloc(body,snake_length*sizeof(snake_body));
 	if(!body)
 	{
@@ -115,27 +127,22 @@ void snake_init(void)
 		exit(1);
 	}
 
+	body[0].part.point[0].x = BODY_X;
+	body[0].part.point[0].y = BODY_Y;
+	body[0].part.point[1].x = -BODY_X;
+	body[0].part.point[1].y = BODY_Y;
+	body[0].part.point[2].x = -BODY_X;
+	body[0].part.point[2].y = -BODY_Y;
+	body[0].part.point[3].x = BODY_X;
+	body[0].part.point[3].y = -BODY_Y;
+
+	body[0].position.x = BODY_POS_X_DEFAULT;
+	body[0].position.y = BODY_POS_Y_DEFAULT;
+
 	body[0].number = 0;
 	body[0].direction = RIGHT;
-	body[0].rotate = NO;
-	body[0].up.point[0].x = BODY_X;
-	body[0].up.point[0].y = BODY_Y;
-	body[0].up.point[1].x = -BODY_X;
-	body[0].up.point[1].y = BODY_Y;
-	body[0].up.point[2].x = -BODY_X;
-	body[0].up.point[2].y = -BODY_Y;
-	body[0].up.point[3].x = BODY_X;
-	body[0].up.point[3].y = -BODY_Y;
 
-	body[0].down.point[0].x = 0.0;
-	body[0].down.point[0].y = 0.0;
-	body[0].down.point[1].x = -(BODY_X*2.0);
-	body[0].down.point[1].y = 0.0;
-	body[0].down.point[2].x = -(BODY_X*2.0);
-	body[0].down.point[2].y = -(BODY_Y*2.0);
-	body[0].down.point[3].x = 0.0;
-	body[0].down.point[3].y = -(BODY_Y*2.0);
-	
+	body[0].next = NULL;
 	/* Set snake as alive */
 	dead = NO;
 

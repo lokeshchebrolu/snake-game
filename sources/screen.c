@@ -5,19 +5,35 @@
 #include<math.h>
 #include<time.h>
 #include<string.h>
+#include<sys/types.h>
+#include<sys/stat.h>
+#include<fcntl.h>
 #include<GL/gl.h>
 #include<GL/glut.h>
 #include<GL/glu.h>
 
+/* Local symbols */
+#define SCREEN_MATRIX_X (((int)(MAX_X/SNAKE_SPEED_DEFAULT)*2)+1)
+#define SCREEN_MATRIX_Y (((int)(MAX_Y/SNAKE_SPEED_DEFAULT)*2)+1)
+
+#define CURRENT_HEAD_X (head.position.x)
+#define CURRENT_HEAD_Y (head.position.y)
+
+/* Local types */
+typedef struct screen_matrix_cell
+{
+	unsigned int dir:3;
+	float angle;
+}screen_matrix_cell;
+
 /****** Local variables ******/
 /* Current movement direction */
 static int move_dir=RIGHT;
+static screen_matrix_cell screen_matrix[SCREEN_MATRIX_X][SCREEN_MATRIX_Y];
 
 /* Current rotation angle to be done */
 static float snake_rot_angle=0.0;
 
-/* Translation co-ordinates for movement of snake */
-static float x_pos,y_pos;
 
 /****** Local function declaration ******/
 /* Initialize boundary data */
@@ -48,9 +64,20 @@ float make_positive(float val);
 float make_negative(float val);
 /* Generates two randome values less than given modulo_val */
 void rand_val(int *rand,int modulo_val);
+/* screen_matrix initialisation */
+void screen_matrix_init(void);
+/* screen_matrix update */
+void screen_matrix_update(float x,float y,int dir,float angle);
+/* screen_matrix angle at co-ordinates */
+float screen_matrix_angle(float x,float y);
+/* screen_matrix direction at co-ordinates */
+int screen_matrix_dir(float x,float y);
+/* Update next transition position of head */	
+void head_next_pos(void);
+/* Update next transition position of body */	
+void body_next_pos(void);
 
-	
-/****** Globale variable definitions ******/
+	/****** Global variable definitions ******/
 /* Variable to hold the created window id value
    This is used for closing window */
 int window_id;
@@ -100,9 +127,6 @@ void screen_init(int *argc,char *argv[])
 	/* Initialize bounday data */
 	boundary_init();
 	
-	/* Set initial position of snake */
-	x_pos = -BOUNDARY_X;
-	y_pos = 0;
 }
 
 /* OpenGL default display function which is used for drawing each frame */
@@ -132,7 +156,8 @@ void display(void)
 		
 		/* Draw boundary */
 		boundary();
-		
+
+
 		/* Draw snake */
 		snake_print();
 
@@ -179,33 +204,6 @@ void timer(int arg)
 	/* Set timer function to itself with 60FPS so it calls itself every 1/60th of second */
 	glutTimerFunc(1000/60,timer,0);
 	
-	/* Increment position of snake based on current movement direction */
-	switch(move_dir)
-	{
-		case	UP:
-			y_pos += snake_speed;
-			break;
-
-		case DOWN:
-			y_pos -= snake_speed;
-			break;
-
-		case LEFT:
-			x_pos -= snake_speed;
-			break;
-
-		case RIGHT:
-			x_pos += snake_speed;
-			break;
-			
-		/* If END is key by USER pressed then close window */
-		case END:
-			glutDestroyWindow(window_id);
-			break;
-	}
-
-	/* Update snake hit status */
-	update_hit_status();
 }
 
 /* OpenGL default Input capture function Used to read KEY press from keyboard*/
@@ -218,10 +216,14 @@ void specialInput(int key,int x,int y)
 			if(!(move_dir^LEFT) || !(move_dir^RIGHT))
 			{
 				if(!(move_dir^LEFT))
+				{
 					snake_rot_angle += -90.0;
+				}
 				else if(!(move_dir^RIGHT))
+				{
 					snake_rot_angle += 90.0;
-				move_dir=UP;
+				}
+				move_dir=UP;	
 			}
 			break;
 
@@ -229,9 +231,13 @@ void specialInput(int key,int x,int y)
 			if(!(move_dir^LEFT) || !(move_dir^RIGHT))
 			{
 				if(!(move_dir^LEFT))
+				{
 					snake_rot_angle += 90.0;
+				}
 				else if(!(move_dir^RIGHT))
+				{
 					snake_rot_angle += -90.0;
+				}
 				move_dir=DOWN;
 			}
 			break;
@@ -240,9 +246,13 @@ void specialInput(int key,int x,int y)
 			if(!(move_dir^UP) || !(move_dir^DOWN))
 			{
 				if(!(move_dir^UP))
+				{
 					snake_rot_angle += 90.0;
+				}
 				else if(!(move_dir^DOWN))
+				{
 					snake_rot_angle += -90.0;
+				}
 				move_dir=LEFT;
 			}
 			break;
@@ -251,9 +261,13 @@ void specialInput(int key,int x,int y)
 			if(!(move_dir^UP) || !(move_dir^DOWN))
 			{
 				if(!(move_dir^UP))
+				{
 					snake_rot_angle += -90.0;
+				}
 				else if(!(move_dir^DOWN))
+				{
 					snake_rot_angle += 90.0;
+				}
 				move_dir=RIGHT;
 			}
 			break;
@@ -262,6 +276,8 @@ void specialInput(int key,int x,int y)
 			move_dir=END;
 			break;
 	}
+
+
 }
 
 /****** Local function definitions ******/
@@ -346,14 +362,20 @@ void next_egg(void)
 /* Draws whole snake on screen */
 void snake_print(void)
 {
+	float rot_angle=0.0;
+	/****** Draw Head ******/
 	glPushMatrix();
 	
-	/****** Draw Head ******/
-	/* Keep head position */
-	glTranslatef(x_pos,y_pos,0.0);
+	/* Get next head position */
+	head_next_pos();
+	
+	/* Keep head at it's origin */
+	glTranslatef(CURRENT_HEAD_X,CURRENT_HEAD_Y,0);
 	
 	/* Rotate head with current angle if needed to rotate */
-	glRotatef(snake_rot_angle,0.0,0.0,1.0);
+	rot_angle = screen_matrix_angle(CURRENT_HEAD_X,CURRENT_HEAD_Y);
+	glRotatef(rot_angle,0.0,0.0,1.0);
+	
 	
 	/* Set colour to NOSE,SKULL as white */
 	glColor3f(WHITE);
@@ -374,6 +396,22 @@ void snake_print(void)
 	glColor3f(WHITE);
 	glEnd();
 	glPopMatrix();
+	/************************/
+
+	/******* Draw Body *******/
+	for(int i=0;i<1;i++)
+	{
+		body_next_pos();
+		glPushMatrix();	
+		/*Keep body at it's origin */
+		glTranslatef(body[i].position.x,body[i].position.y,0);
+
+		glColor3f(WHITE);
+		block_print(body[i].part);
+	
+		glPopMatrix();
+	}
+ /*************************/
 }
 
 /* Draws string on screen */
@@ -443,9 +481,9 @@ void update_hit_status(void)
 	switch(move_dir)
 	{
 		case UP:
-			head_border = y_pos+(head.nose.point[0].x);
-			head_left_edge = x_pos-(head.nose.point[0].y);
-			head_right_edge = x_pos+(-(head.nose.point[3].y));
+			head_border = CURRENT_HEAD_Y+(head.nose.point[0].x);
+			head_left_edge = CURRENT_HEAD_X-(head.nose.point[0].y);
+			head_right_edge = CURRENT_HEAD_X+(-(head.nose.point[3].y));
 
 			egg_border = (egg.position.y)-(-(egg.obst.point[3].y));
 			egg_left_edge = (egg.position.x)-(-(egg.obst.point[2].x));
@@ -455,14 +493,14 @@ void update_hit_status(void)
 			hit.head_left_edge_hit = ((head_left_edge >= egg_left_edge) && (head_left_edge <= egg_right_edge));
 			hit.head_right_edge_hit = ((head_right_edge >= egg_left_edge) && (head_right_edge <= egg_right_edge));
 			hit.border_hit = (head_border >= (game_boundary.point[0].y));
-			hit.pos_in_range = (y_pos <= egg.position.y);
+			hit.pos_in_range = (CURRENT_HEAD_Y <= egg.position.y);
 
 			break;
 
 		case DOWN:
-			head_border = y_pos-(head.nose.point[0].x);
-			head_left_edge = x_pos+(head.nose.point[0].y);
-			head_right_edge = x_pos-(-(head.nose.point[3].y));
+			head_border = CURRENT_HEAD_Y-(head.nose.point[0].x);
+			head_left_edge = CURRENT_HEAD_X+(head.nose.point[0].y);
+			head_right_edge = CURRENT_HEAD_X-(-(head.nose.point[3].y));
 
 			egg_border = (egg.position.y)+(egg.obst.point[0].y);
 			egg_left_edge = (egg.position.x)+(egg.obst.point[0].x);
@@ -472,14 +510,14 @@ void update_hit_status(void)
 			hit.head_left_edge_hit = ((head_left_edge <= egg_left_edge) && (head_left_edge >= egg_right_edge));
 			hit.head_right_edge_hit = ((head_right_edge <= egg_left_edge) && (head_right_edge >= egg_right_edge));
 			hit.border_hit = (head_border <= (game_boundary.point[3].y));
-			hit.pos_in_range = (y_pos >= egg.position.y);
+			hit.pos_in_range = (CURRENT_HEAD_Y >= egg.position.y);
 			
 			break;
 
 		case LEFT:
-			head_border = x_pos-(head.nose.point[0].x);
-			head_left_edge = y_pos-(head.nose.point[0].y);
-			head_right_edge = y_pos+(-(head.nose.point[3].y));
+			head_border = CURRENT_HEAD_X-(head.nose.point[0].x);
+			head_left_edge = CURRENT_HEAD_Y-(head.nose.point[0].y);
+			head_right_edge = CURRENT_HEAD_Y+(-(head.nose.point[3].y));
 
 			egg_border = (egg.position.x)+(egg.obst.point[0].x);
 			egg_left_edge = (egg.position.y)-(-(egg.obst.point[3].y));
@@ -489,14 +527,14 @@ void update_hit_status(void)
 			hit.head_left_edge_hit = ((head_left_edge >= egg_left_edge) && (head_left_edge <= egg_right_edge));
 			hit.head_right_edge_hit = ((head_right_edge >= egg_left_edge) && (head_right_edge <= egg_right_edge));
 			hit.border_hit = (head_border <= (game_boundary.point[1].x));
-			hit.pos_in_range = (x_pos >= egg.position.x);
+			hit.pos_in_range = (CURRENT_HEAD_X >= egg.position.x);
 			
 			break;
 
 		case RIGHT:
-			head_border = x_pos+(head.nose.point[0].x);
-			head_left_edge = y_pos+(head.nose.point[0].y);
-			head_right_edge = y_pos-(-(head.nose.point[3].y));
+			head_border = CURRENT_HEAD_X+(head.nose.point[0].x);
+			head_left_edge = CURRENT_HEAD_Y+(head.nose.point[0].y);
+			head_right_edge = CURRENT_HEAD_Y-(-(head.nose.point[3].y));
 
 			egg_border = (egg.position.x)-(-(egg.obst.point[1].x));
 			egg_left_edge = (egg.position.y)+(egg.obst.point[1].y);
@@ -506,14 +544,16 @@ void update_hit_status(void)
 			hit.head_left_edge_hit = ((head_left_edge <= egg_left_edge) && (head_left_edge >= egg_right_edge));
 			hit.head_right_edge_hit = ((head_right_edge <= egg_left_edge) && (head_right_edge >= egg_right_edge));
 			hit.border_hit = (head_border >= (game_boundary.point[0].x));
-			hit.pos_in_range = (x_pos <= egg.position.x);
-			
+			hit.pos_in_range = (CURRENT_HEAD_X <= egg.position.x);
+
+
 			break;
 	}
 
 	egg_hit = (hit.head_border_hit && (hit.head_left_edge_hit || hit.head_right_edge_hit))&& (hit.pos_in_range);
 	
 	dead = (hit.border_hit);
+	
 }
 
 
@@ -627,3 +667,155 @@ void rand_val(int *rand,int modulo_val)
 	}
 	rand[1]=atoi(val)%modulo_val;
 }
+
+/* screen_matrix initialisation */
+void screen_matrix_init(void)
+{
+	for(int i=0;i<SCREEN_MATRIX_X;i++)
+	{
+		for(int j=0;j<SCREEN_MATRIX_Y;j++)
+		{
+			screen_matrix[i][j].dir = 0;
+			screen_matrix[i][j].angle = 0;
+		}
+	}
+	screen_matrix_update(CURRENT_HEAD_X,CURRENT_HEAD_Y,RIGHT,0.0);
+	screen_matrix_update(body[0].position.x,body[0].position.y,RIGHT,0.0);
+}
+
+/* screen_matrix update */
+void screen_matrix_update(float x,float y,int dir,float angle)
+{
+	int i=0,j=0;
+
+	x = x/SNAKE_SPEED_DEFAULT;
+	y = y/SNAKE_SPEED_DEFAULT;
+
+	if(x>=0)
+		j = (SCREEN_MATRIX_Y/2)+x;
+	if(x<0)
+		j = (SCREEN_MATRIX_Y/2)-(-x);
+
+	if(y>=0)
+		i = (SCREEN_MATRIX_X/2)-y;
+	if(y<0)
+		i = (SCREEN_MATRIX_X/2)+(-y);
+
+	screen_matrix[i][j].dir = dir;
+	screen_matrix[i][j].angle = angle;
+}
+
+
+/* screen_matrix angle at co-ordinates */
+float screen_matrix_angle(float x,float y)
+{
+	int i,j;
+
+	x = x/SNAKE_SPEED_DEFAULT;
+	y = y/SNAKE_SPEED_DEFAULT;
+
+	if(x>=0)
+		j = (SCREEN_MATRIX_Y/2)+x;
+	if(x<0)
+		j = (SCREEN_MATRIX_Y/2)-(-x);
+
+	if(y>=0)
+		i = (SCREEN_MATRIX_X/2)-y;
+	if(y<0)
+		i = (SCREEN_MATRIX_X/2)+(-y);
+	
+	return screen_matrix[i][j].angle;
+}
+
+/* screen_matrix dir at co-ordinates */
+int screen_matrix_dir(float x,float y)
+{
+	int i,j;
+
+	x = x/SNAKE_SPEED_DEFAULT;
+	y = y/SNAKE_SPEED_DEFAULT;
+
+	if(x>=0)
+		j = (SCREEN_MATRIX_Y/2)+x;
+	if(x<0)
+		j = (SCREEN_MATRIX_Y/2)-(-x);
+
+	if(y>=0)
+		i = (SCREEN_MATRIX_X/2)-y;
+	if(y<0)
+		i = (SCREEN_MATRIX_X/2)+(-y);
+	
+	return screen_matrix[i][j].dir;
+}
+
+void head_next_pos(void)
+{
+	screen_matrix_update(CURRENT_HEAD_X,CURRENT_HEAD_Y,move_dir,snake_rot_angle);
+
+	/* Increment position of snake based on current movement direction */
+	switch(move_dir)
+	{
+		case	UP:
+			head.position.y += snake_speed;
+			break;
+
+		case DOWN:
+			head.position.y -= snake_speed;
+			break;
+
+		case LEFT:
+			head.position.x -= snake_speed;
+			break;
+
+		case RIGHT:
+			head.position.x += snake_speed;
+			break;
+			
+		/* If END is key by USER pressed then close window */
+		case END:
+			glutDestroyWindow(window_id);
+			break;
+	}
+	screen_matrix_update(CURRENT_HEAD_X,CURRENT_HEAD_Y,0,snake_rot_angle);
+
+
+	/* Update snake hit status */
+	update_hit_status();
+
+}
+
+/* Update next transition position of body */	
+void body_next_pos(void)
+{
+	int old_dir = body[0].direction;
+	switch(old_dir)
+	{
+		case	UP:
+			body[0].position.y += snake_speed;
+			break;
+
+		case DOWN:
+			body[0].position.y -= snake_speed;
+			break;
+
+		case LEFT:
+			body[0].position.x -= snake_speed;
+			break;
+
+		case RIGHT:
+			body[0].position.x += snake_speed;
+			break;
+			
+		/* If END is key by USER pressed then close window */
+		case END:
+			glutDestroyWindow(window_id);
+			break;
+	}
+
+	int new_dir = screen_matrix_dir(body[0].position.x,body[0].position.y);
+	if((old_dir^new_dir) && (new_dir)) /* Change in direction */
+		body[0].direction = new_dir;
+}
+
+
+

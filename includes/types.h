@@ -19,23 +19,22 @@ typedef struct block
 
 /**************************/
 /*    Snake body shape    */
-/*                        */
-/*          ___________   */
-/*         |           |  */
-/*         |    UP     |  */
-/*   ______|___________|  */
-/*  |           |         */
-/*  |   DOWN    |         */
-/*  |___________|         */
+/*      _____________     */
+/*     |             |    */
+/*     |             |    */
+/*     |             |    */
+/*     |             |    */
+/*     |             |    */
+/*     |_____________|    */
 /*                        */
 /**************************/
 typedef struct snake_body
 {
-	block up; /* UP block */
-	block down; /* DOWN block */
+	block part; /* Body block */
+	vertex position;
 	int number; /* position in whole body */
 	int direction; /* Movement direction */
-	int rotate; /* Rotation status 1: to be rotated; 0: no rotation needed */
+	struct snake_body *next; /* Pointer to next body part */
 }snake_body;
 
 
@@ -60,8 +59,8 @@ typedef struct snake_head
 	int eye_size; /* Eye size in pixels */
 	block nose; /* NOSE block */
 	block skull; /* SKULL block */
+	vertex position;
 	int direction; /* Movement direction of head */
-	int rotate; /* Rotation status 1: to be rotated; 0: no rotation needed */
 }snake_head;
 
 
