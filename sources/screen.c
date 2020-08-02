@@ -74,7 +74,8 @@ void screen_matrix_update(float x,float y,int dir,float angle);
 int screen_matrix_dir(float x,float y);
 /* screen_matrix value at co-ordinates */
 float screen_matrix_angle(float x,float y);
-	
+/* Update next transition position of head */	
+void head_next_pos(int dir);
 
 	/****** Global variable definitions ******/
 /* Variable to hold the created window id value
@@ -149,13 +150,14 @@ void display(void)
 		else
 		{
 			egg_hit=0;
-			//snake_length++;
+			snake_length++;
 			new_egg();
 		}
 		
 		/* Draw boundary */
 		boundary();
-		
+
+
 		/* Draw snake */
 		snake_print();
 
@@ -174,6 +176,7 @@ void display(void)
 	
 	/* Swap double buffers back and forth */
 	glutSwapBuffers();
+	printf("display()\n");
 }
 
 /* OpenGL default function used when window is resized.
@@ -202,37 +205,7 @@ void timer(int arg)
 	/* Set timer function to itself with 60FPS so it calls itself every 1/60th of second */
 	glutTimerFunc(1000/60,timer,0);
 	
-	/* Increment position of snake based on current movement direction */
-	switch(move_dir)
-	{
-		case	UP:
-			head.position.y += snake_speed;
-			body[0].position.y += snake_speed;
-			break;
-
-		case DOWN:
-			head.position.y -= snake_speed;
-			body[0].position.y -= snake_speed;
-			break;
-
-		case LEFT:
-			head.position.x -= snake_speed;
-			body[0].position.x -= snake_speed;
-			break;
-
-		case RIGHT:
-			head.position.x += snake_speed;
-			body[0].position.x += snake_speed;
-			break;
-			
-		/* If END is key by USER pressed then close window */
-		case END:
-			glutDestroyWindow(window_id);
-			break;
-	}
-
-	/* Update snake hit status */
-	update_hit_status();
+	printf("timer()\n");
 }
 
 /* OpenGL default Input capture function Used to read KEY press from keyboard*/
@@ -245,9 +218,13 @@ void specialInput(int key,int x,int y)
 			if(!(move_dir^LEFT) || !(move_dir^RIGHT))
 			{
 				if(!(move_dir^LEFT))
+				{
 					snake_rot_angle += -90.0;
+				}
 				else if(!(move_dir^RIGHT))
+				{
 					snake_rot_angle += 90.0;
+				}
 				move_dir=UP;	
 			}
 			break;
@@ -256,9 +233,13 @@ void specialInput(int key,int x,int y)
 			if(!(move_dir^LEFT) || !(move_dir^RIGHT))
 			{
 				if(!(move_dir^LEFT))
+				{
 					snake_rot_angle += 90.0;
+				}
 				else if(!(move_dir^RIGHT))
+				{
 					snake_rot_angle += -90.0;
+				}
 				move_dir=DOWN;
 			}
 			break;
@@ -267,9 +248,13 @@ void specialInput(int key,int x,int y)
 			if(!(move_dir^UP) || !(move_dir^DOWN))
 			{
 				if(!(move_dir^UP))
+				{
 					snake_rot_angle += 90.0;
+				}
 				else if(!(move_dir^DOWN))
+				{
 					snake_rot_angle += -90.0;
+				}
 				move_dir=LEFT;
 			}
 			break;
@@ -278,10 +263,15 @@ void specialInput(int key,int x,int y)
 			if(!(move_dir^UP) || !(move_dir^DOWN))
 			{
 				if(!(move_dir^UP))
+				{
 					snake_rot_angle += -90.0;
+				}
 				else if(!(move_dir^DOWN))
+				{
 					snake_rot_angle += 90.0;
+				}
 				move_dir=RIGHT;
+			//	screen_matrix_update(CURRENT_HEAD_X+SNAKE_SPEED_DEFAULT,CURRENT_HEAD_Y,move_dir,snake_rot_angle);
 			}
 			break;
 
@@ -290,8 +280,7 @@ void specialInput(int key,int x,int y)
 			break;
 	}
 
-	if(move_dir^END)/* If direction is not END */
-		screen_matrix_update(CURRENT_HEAD_X,CURRENT_HEAD_Y,move_dir,snake_rot_angle);
+	printf("special_input()\n");
 
 }
 
@@ -381,12 +370,15 @@ void snake_print(void)
 	/****** Draw Head ******/
 	glPushMatrix();
 	
+	/* Get next head position */
+	head_next_pos(move_dir);
+	
 	/* Keep head at it's origin */
 	glTranslatef(CURRENT_HEAD_X,CURRENT_HEAD_Y,0);
 	
 	/* Rotate head with current angle if needed to rotate */
 	rot_angle = screen_matrix_angle(CURRENT_HEAD_X,CURRENT_HEAD_Y);
-	glRotatef(rot_angle,0.0,0.0,1.0);
+	glRotatef(snake_rot_angle,0.0,0.0,1.0);
 	
 	/* Set colour to NOSE,SKULL as white */
 	glColor3f(WHITE);
@@ -409,12 +401,12 @@ void snake_print(void)
 	glPopMatrix();
 	/************************/
 
-	/******* Draw Body ******/
+	/******* Draw Body ******
 	for(int i=0;i<snake_length;i++)
 	{
 		glPushMatrix();
 	
-		/* Keep body at it's origin */
+		* Keep body at it's origin 
 		glTranslatef(body[i].position.x,body[i].position.y,0);
 
 		glColor3f(WHITE);
@@ -422,7 +414,7 @@ void snake_print(void)
 	
 		glPopMatrix();
 	}
-	/************************/
+	************************/
 }
 
 /* Draws string on screen */
@@ -563,6 +555,7 @@ void update_hit_status(void)
 	egg_hit = (hit.head_border_hit && (hit.head_left_edge_hit || hit.head_right_edge_hit))&& (hit.pos_in_range);
 	
 	dead = (hit.border_hit);
+	printf("Egg_hit:%d\tdead:%d\n",egg_hit,dead);
 }
 
 
@@ -719,6 +712,8 @@ void screen_matrix_update(float x,float y,int dir,float angle)
 
 	screen_matrix[i][j].cell = dir;
 	screen_matrix[i][j].angle = angle;
+	printf("[%d][%d].cell = %d\n",i,j,screen_matrix[i][j].cell);
+	printf("[%d][%d].angle = %f\n\n",i,j,screen_matrix[i][j].angle);
 }
 
 /* screen_matrix direction at co-ordinates */
@@ -763,4 +758,36 @@ float screen_matrix_angle(float x,float y)
 		i = (SCREEN_MATRIX_X/2)+(-y);
 
 	return screen_matrix[i][j].angle;
+}
+
+void head_next_pos(int dir)
+{
+	/* Increment position of snake based on current movement direction */
+	switch(move_dir)
+	{
+		case	UP:
+			head.position.y += snake_speed;
+			break;
+
+		case DOWN:
+			head.position.y -= snake_speed;
+			break;
+
+		case LEFT:
+			head.position.x -= snake_speed;
+			break;
+
+		case RIGHT:
+			head.position.x += snake_speed;
+			break;
+			
+		/* If END is key by USER pressed then close window */
+		case END:
+			glutDestroyWindow(window_id);
+			break;
+	}
+
+	/* Update snake hit status */
+	update_hit_status();
+
 }

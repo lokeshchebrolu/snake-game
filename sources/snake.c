@@ -117,9 +117,9 @@ void snake_init(void)
 	head.position.y = HEAD_POS_Y_DEFAULT;
 
 	head.direction = HEAD_DIRECTION_DEFAULT;
-	head.rotate = NO;
-	
+
 	/* Initialize co-ordinates of body with default length */
+	
 	body = (snake_body*)realloc(body,snake_length*sizeof(snake_body));
 	if(!body)
 	{
@@ -141,7 +141,6 @@ void snake_init(void)
 
 	body[0].number = 0;
 	body[0].direction = HEAD_DIRECTION_DEFAULT;
-	body[0].rotate = NO;
 	
 	body[0].next = NULL;
 	/* Set snake as alive */

@@ -34,8 +34,6 @@ typedef struct snake_body
 	vertex position;
 	int number; /* position in whole body */
 	int direction; /* Movement direction */
-	int rotate; /* Rotation status 1: to be rotated; 0: no rotation needed */
-
 	struct snake_body *next; /* Pointer to next body part */
 }snake_body;
 
@@ -63,7 +61,6 @@ typedef struct snake_head
 	block skull; /* SKULL block */
 	vertex position;
 	int direction; /* Movement direction of head */
-	int rotate; /* Rotation status 1: to be rotated; 0: no rotation needed */
 }snake_head;
 
 
