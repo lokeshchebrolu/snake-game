@@ -22,14 +22,14 @@
 /*|                |                |*/
 /*|      (0,-MAX_Y)|                |*/
 /* --------------------------------- */
-#define MAX_X 50.0f	/* X-axix maximum value */
-#define MAX_Y 50.0f /* Y-axix maximum value */
+#define MAX_X (50.0f)	/* X-axix maximum value */
+#define MAX_Y (50.0f) /* Y-axix maximum value */
 
 /* Quadrants */
-#define FIRST_QUADRANT	1
-#define SECOND_QUADRANT	2
-#define THIRD_QUADRANT	3
-#define FOURTH_QUADRANT	4
+#define FIRST_QUADRANT	(1)
+#define SECOND_QUADRANT	(2)
+#define THIRD_QUADRANT	(3)
+#define FOURTH_QUADRANT	(4)
 
 
 /* Game outer boundary values inside 2D grid plane*/
@@ -58,12 +58,12 @@
 #define SCORE_BOARD_HEIGHT (4)
 
 /* Window Initial position co-ordinates */
-#define WINDOW_POS_X 0
-#define WINDOW_POS_Y 0
+#define WINDOW_POS_X (0)
+#define WINDOW_POS_Y (0)
 
 /* Window SIZE in Pixels */
-#define WINDOW_SIZE_X 600
-#define WINDOW_SIZE_Y 600
+#define WINDOW_SIZE_X (600)
+#define WINDOW_SIZE_Y (600)
 
 /* Macros for colours in R,G,B values */
 #define BLACK 0,0,0

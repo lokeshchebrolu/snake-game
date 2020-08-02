@@ -40,7 +40,7 @@
 #define BODY_Y (HEAD_NOSE_Y)
 
 /* Body default origin position */
-#define BODY_POS_X_DEFAULT (HEAD_POS_X_DEFAULT-(1+0.2+BODY_X))
+#define BODY_POS_X_DEFAULT (HEAD_POS_X_DEFAULT-(SNAKE_SPEED_DEFAULT*9))
 #define BODY_POS_Y_DEFAULT (0.0)
 
 #define YES (1)
@@ -140,8 +140,8 @@ void snake_init(void)
 	body[0].position.y = BODY_POS_Y_DEFAULT;
 
 	body[0].number = 0;
-	body[0].direction = HEAD_DIRECTION_DEFAULT;
-	
+	body[0].direction = RIGHT;
+
 	body[0].next = NULL;
 	/* Set snake as alive */
 	dead = NO;
