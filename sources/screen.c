@@ -75,7 +75,9 @@ int screen_matrix_dir(float x,float y);
 /* Update next transition position of head */	
 void head_next_pos(void);
 /* Update next transition position of body */	
-void body_next_pos(void);
+void body_next_pos(int i);
+/* Add one body part */
+void extend_body(void);
 
 	/****** Global variable definitions ******/
 /* Variable to hold the created window id value
@@ -151,12 +153,12 @@ void display(void)
 		{
 			egg_hit=0;
 			snake_length++;
+			extend_body();
 			new_egg();
 		}
 		
 		/* Draw boundary */
 		boundary();
-
 
 		/* Draw snake */
 		snake_print();
@@ -399,9 +401,9 @@ void snake_print(void)
 	/************************/
 
 	/******* Draw Body *******/
-	for(int i=0;i<1;i++)
+	for(int i=0;i<snake_length;i++)
 	{
-		body_next_pos();
+		body_next_pos(i);
 		glPushMatrix();	
 		/*Keep body at it's origin */
 		glTranslatef(body[i].position.x,body[i].position.y,0);
@@ -785,25 +787,25 @@ void head_next_pos(void)
 }
 
 /* Update next transition position of body */	
-void body_next_pos(void)
+void body_next_pos(int i)
 {
-	int old_dir = body[0].direction;
+	int old_dir = body[i].direction;
 	switch(old_dir)
 	{
 		case	UP:
-			body[0].position.y += snake_speed;
+			body[i].position.y += snake_speed;
 			break;
 
 		case DOWN:
-			body[0].position.y -= snake_speed;
+			body[i].position.y -= snake_speed;
 			break;
 
 		case LEFT:
-			body[0].position.x -= snake_speed;
+			body[i].position.x -= snake_speed;
 			break;
 
 		case RIGHT:
-			body[0].position.x += snake_speed;
+			body[i].position.x += snake_speed;
 			break;
 			
 		/* If END is key by USER pressed then close window */
@@ -812,10 +814,61 @@ void body_next_pos(void)
 			break;
 	}
 
-	int new_dir = screen_matrix_dir(body[0].position.x,body[0].position.y);
+	int new_dir = screen_matrix_dir(body[i].position.x,body[i].position.y);
 	if((old_dir^new_dir) && (new_dir)) /* Change in direction */
-		body[0].direction = new_dir;
+		body[i].direction = new_dir;
 }
 
+/* Add one body part */
+void extend_body(void)
+{
+	body = (snake_body*)realloc(body,snake_length*sizeof(snake_body));
+	if(!body)
+	{
+		perror("snake_init(): realloc() error:");
+		exit(1);
+	}
 
+	int i = snake_length-1;
+
+	body[i].part.point[0].x = body[0].part.point[0].x;
+	body[i].part.point[0].y = body[0].part.point[0].y;
+	body[i].part.point[1].x = body[0].part.point[1].x;
+	body[i].part.point[1].y = body[0].part.point[1].y;
+	body[i].part.point[2].x = body[0].part.point[2].x;
+	body[i].part.point[2].y = body[0].part.point[2].y;
+	body[i].part.point[3].x = body[0].part.point[3].x;
+	body[i].part.point[3].y = body[0].part.point[3].y;
+
+	int prev_part_dir = body[i-1].direction;
+	switch(prev_part_dir)
+	{
+		case UP:
+			body[i].position.x = body[i-1].position.x;
+			body[i].position.y = body[i-1].position.y - (SNAKE_SPEED_DEFAULT*9);
+			break;
+			
+		case DOWN:
+			body[i].position.x = body[i-1].position.x;
+			body[i].position.y = body[i-1].position.y + (SNAKE_SPEED_DEFAULT*9);
+			break;
+
+		case LEFT:
+			body[i].position.x = body[i-1].position.x + (SNAKE_SPEED_DEFAULT*9);
+			body[i].position.y = body[i-1].position.y;
+			break;
+
+		case RIGHT:
+			body[i].position.x = body[i-1].position.x - (SNAKE_SPEED_DEFAULT*9);
+			body[i].position.y = body[i-1].position.y;
+			break;
+	}
+
+
+	body[i].number = i;
+	body[i].direction = prev_part_dir;
+
+	body[i-1].next = body+i;
+	body[i].next = NULL;
+}
 
