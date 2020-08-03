@@ -68,6 +68,12 @@
 /* Macros for colours in R,G,B values */
 #define BLACK 0,0,0
 #define WHITE	1.0f,1.0f,1.0f
+#define LIGHT_GRASS_GREEN 0.36,0.95,0.01
+
+#define RED 1.0,0.0,0.0
+#define GREEN 0.0,1.0,0.0
+#define BLUE 0.0,0.0,1.0
+#define YELLOW 1.0,1.0,0.0
 
 /* Frame Refresh time */
 /* Set to 60Fps = 1000ms/60 */

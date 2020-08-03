@@ -30,6 +30,7 @@ typedef struct screen_matrix_cell
 /* Current movement direction */
 static int move_dir=RIGHT;
 static screen_matrix_cell screen_matrix[SCREEN_MATRIX_X][SCREEN_MATRIX_Y];
+static float egg_colours[4][3] = {{YELLOW},{WHITE},{YELLOW},{WHITE}};
 
 /* Current rotation angle to be done */
 static float snake_rot_angle=0.0;
@@ -78,6 +79,9 @@ void head_next_pos(void);
 void body_next_pos(int i);
 /* Add one body part */
 void extend_body(void);
+/* Rotate egg colours */
+void change_egg_colour(void);
+
 
 /****** Global variable definitions ******/
 /* Variable to hold the created window id value
@@ -109,7 +113,7 @@ void screen_init(int *argc,char *argv[])
 	window_id=glutCreateWindow("Snake Game");
 
 	/* Set background colour to black */
-	glClearColor(0,0,0,1);
+	glClearColor(BLACK,1);
 
 	/* Set display function pointer */
 	glutDisplayFunc(display);
@@ -206,6 +210,13 @@ void timer(int arg)
 
 	/* Set timer function to itself with 60FPS so it calls itself every 1/60th of second */
 	glutTimerFunc(1000/60,timer,0);
+	static int colour_speed =0;
+	colour_speed++;
+	if(!(colour_speed^20))
+	{
+		change_egg_colour();
+		colour_speed=0;
+	}
 
 }
 
@@ -357,10 +368,10 @@ void boundary(void)
 	glEnd();
 	glPopMatrix();
 
-	char score_string[12];
-	sprintf(score_string,"SCORE : %d",snake_length);
+	char score_string[48];
+	sprintf(score_string,"SCORE : %d         press 'END' to close game",snake_length);
 	float color[3]={WHITE};
-	output_string(MAX_X-15,MAX_Y-3,score_string,color);
+	output_string(-6,MAX_Y-3,score_string,color);
 }
 
 /* Draws next egg on screen */
@@ -369,10 +380,23 @@ void next_egg(void)
 	glPushMatrix();
 	/* Move egg to it's position */
 	glTranslatef(egg.position.x,egg.position.y,0);
-	glBegin(GL_POLYGON);
+	
 	/* Draw egg */
-	block_print(egg.obst);
+	glBegin(GL_POLYGON);
+	glColor3f(egg_colours[0][0],egg_colours[0][1],egg_colours[0][2]);
+	glVertex2f(egg.obst.point[0].x,egg.obst.point[0].y);
+	
+	/*glColor3f(egg_colours[1][0],egg_colours[1][1],egg_colours[1][2]);*/
+	glVertex2f(egg.obst.point[1].x,egg.obst.point[1].y);
+	
+	/*glColor3f(egg_colours[2][0],egg_colours[2][1],egg_colours[2][2]);*/
+	glVertex2f(egg.obst.point[2].x,egg.obst.point[2].y);
+	
+	/*glColor3f(egg_colours[3][0],egg_colours[3][1],egg_colours[3][2]);*/
+	glVertex2f(egg.obst.point[3].x,egg.obst.point[3].y);
 	glEnd();
+	
+	glColor3f(WHITE);
 	glPopMatrix();
 }
 
@@ -395,7 +419,7 @@ void snake_print(void)
 
 
 	/* Set colour to NOSE,SKULL as white */
-	glColor3f(WHITE);
+	glColor3f(LIGHT_GRASS_GREEN);
 	/* Draw Nose */
 	block_print(head.nose);
 	/* Draw Skull */
@@ -410,7 +434,7 @@ void snake_print(void)
 	glVertex2f(head.eye[0].x,head.eye[0].y);/* Left Eye */
 	glVertex2f(head.eye[1].x,head.eye[1].y);/* Right Eye */
 	/* Set back foreground colour to white */
-	glColor3f(WHITE);
+	glColor3f(LIGHT_GRASS_GREEN);
 	glEnd();
 	glPopMatrix();
 	/************************/
@@ -423,7 +447,7 @@ void snake_print(void)
 		/*Keep body at it's origin */
 		glTranslatef(body[i].position.x,body[i].position.y,0);
 
-		glColor3f(WHITE);
+		glColor3f(LIGHT_GRASS_GREEN);
 		block_print(body[i].part);
 
 		glPopMatrix();
@@ -470,7 +494,9 @@ void dead_fun(void)
 	char score_string[12];
 	sprintf(score_string,"SCORE : %d",snake_length);
 	output_string(-7.0,9.5,score_string,color);
-	
+
+	float color2[3]={WHITE};
+	output_string(-12,18,"Press 'END' key to close",color2);
 	glutTimerFunc(0,timer_end,0);
 }
 
@@ -1032,3 +1058,26 @@ void extend_body(void)
 	body[i].next = NULL;
 }
 
+void change_egg_colour(void)
+{
+	float temp[3];
+	temp[0] = egg_colours[3][0];
+	temp[1] = egg_colours[3][1];
+	temp[2] = egg_colours[3][2];
+
+	egg_colours[3][0] = egg_colours[2][0];
+	egg_colours[3][1] = egg_colours[2][1];
+	egg_colours[3][2] = egg_colours[2][2];
+
+	egg_colours[2][0] = egg_colours[1][0];
+	egg_colours[2][1] = egg_colours[1][1];
+	egg_colours[2][2] = egg_colours[1][2];
+	
+	egg_colours[1][0] = egg_colours[0][0];
+	egg_colours[1][1] = egg_colours[0][1];
+	egg_colours[1][2] = egg_colours[0][2];
+
+	egg_colours[0][0] = temp[0];
+	egg_colours[0][1] = temp[1];
+	egg_colours[0][2] = temp[2];
+}
