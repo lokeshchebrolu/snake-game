@@ -585,16 +585,6 @@ void update_hit_status(void)
 					body_part.pos_in_range = (CURRENT_HEAD_Y <= body[i].position.y);
 
 					hit.body_hit = (body_part.head_border_hit && (body_part.head_left_edge_hit || body_part.head_right_edge_hit))&& (body_part.pos_in_range);
-					/*printf("UP  : body[%d] : %d\n",i,hit.body_hit);
-
-						if(hit.body_hit)
-						{
-						printf("head_border : %d\n",body_part.head_border_hit);
-						printf("left_edge   : %d\n",body_part.head_left_edge_hit);
-						printf("right_edge  : %d\n",body_part.head_right_edge_hit);
-						printf("pos_range   : %d\n",body_part.pos_in_range);
-						getchar();
-						}*/
 				}
 			}
 			break;
@@ -631,17 +621,6 @@ void update_hit_status(void)
 					body_part.pos_in_range = (CURRENT_HEAD_Y >= body[i].position.y);
 
 					hit.body_hit = (body_part.head_border_hit && (body_part.head_left_edge_hit || body_part.head_right_edge_hit))&& (body_part.pos_in_range);
-					/*printf("DOWN : body[%d] : %d\n",i,hit.body_hit);
-
-						if(hit.body_hit)
-						{
-						printf("head_border : %d\n",body_part.head_border_hit);
-						printf("left_edge   : %d\n",body_part.head_left_edge_hit);
-						printf("right_edge  : %d\n",body_part.head_right_edge_hit);
-						printf("pos_range   : %d\n",body_part.pos_in_range);
-						getchar();
-						}
-					 */
 				}
 			}
 			break;
@@ -678,16 +657,6 @@ void update_hit_status(void)
 					body_part.pos_in_range = (CURRENT_HEAD_X >= body[i].position.x);
 
 					hit.body_hit = (body_part.head_border_hit && (body_part.head_left_edge_hit || body_part.head_right_edge_hit))&& (body_part.pos_in_range);
-					/*printf("LEFT : body[%d] : %d\n",i,hit.body_hit);
-
-						if(hit.body_hit)
-						{
-						printf("head_border : %d\n",body_part.head_border_hit);
-						printf("left_edge   : %d\n",body_part.head_left_edge_hit);
-						printf("right_edge  : %d\n",body_part.head_right_edge_hit);
-						printf("pos_range   : %d\n",body_part.pos_in_range);
-						getchar();
-						}*/
 				}
 			}
 			break;
@@ -724,16 +693,6 @@ void update_hit_status(void)
 					body_part.pos_in_range = (CURRENT_HEAD_X <= body[i].position.x);
 
 					hit.body_hit = (body_part.head_border_hit && (body_part.head_left_edge_hit || body_part.head_right_edge_hit))&& (body_part.pos_in_range);
-					/*	printf("RIGHT : body[%d] : %d\n",i,hit.body_hit);
-
-							if(hit.body_hit)
-							{
-							printf("head_border : %d\n",body_part.head_border_hit);
-							printf("left_edge   : %d\n",body_part.head_left_edge_hit);
-							printf("right_edge  : %d\n",body_part.head_right_edge_hit);
-							printf("pos_range   : %d\n",body_part.pos_in_range);
-							getchar();
-							}*/
 				}
 			}
 
