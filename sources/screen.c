@@ -275,8 +275,10 @@ void specialInput(int key,int x,int y)
 			}
 			break;
 
+		/* If END is key by USER pressed then close window */
 		case GLUT_KEY_END: /* END key */
 			move_dir=END;
+			glutDestroyWindow(window_id);
 			break;
 	}
 
@@ -954,10 +956,8 @@ void body_next_pos(int i)
 		case RIGHT:
 			body[i].position.x += snake_speed;
 			break;
-
-			/* If END is key by USER pressed then close window */
+      
 		case END:
-			glutDestroyWindow(window_id);
 			break;
 	}
 
