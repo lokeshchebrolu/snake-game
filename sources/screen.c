@@ -209,9 +209,21 @@ void timer(int arg)
 
 }
 
+void timer_end(int arg)
+{
+	;
+}
+
 /* OpenGL default Input capture function Used to read KEY press from keyboard*/
 void specialInput(int key,int x,int y)
 {
+	if(dead) /* Snake Dead */
+	{
+		if(!(key^GLUT_KEY_END))
+			glutDestroyWindow(window_id);
+		return;
+	}
+
 	/* Update new direction based on key pressed by user */
 	switch(key)
 	{
@@ -459,6 +471,7 @@ void dead_fun(void)
 	sprintf(score_string,"SCORE : %d",snake_length);
 	output_string(-7.0,9.5,score_string,color);
 	
+	glutTimerFunc(0,timer_end,0);
 }
 
 /* Updates snake hit status
