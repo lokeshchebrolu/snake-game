@@ -52,7 +52,7 @@ static void egg_init(void);
 
 /****** Global Variable definition ******/
 /* Speed of snake in no.of co-ordinates it
-   will be added for next position */
+	 will be added for next position */
 float snake_speed;
 /* Snake body block count excluding head */
 unsigned int snake_length;
@@ -60,7 +60,7 @@ unsigned int snake_length;
 /* Snake head variable */
 snake_head head;
 /* Snake body pointer 
-   A linkedlist shall be used to implement body blocks*/
+	 A linkedlist shall be used to implement body blocks*/
 snake_body *body = NULL;
 
 /* Egg variable */
@@ -68,13 +68,13 @@ obstacle egg;
 /* Egg size variable */
 float egg_size;
 /* Egg hit status variable 
-   1 : Hit 
-   0 : not hit*/
+1 : Hit 
+0 : not hit*/
 int egg_hit;
 
 /* Snake dead status 
-   1 : dead
-   0 : alive*/
+1 : dead
+0 : alive*/
 int dead;
 
 /*** Global function definitions ***/
@@ -83,11 +83,11 @@ void snake_init(void)
 {
 	/* Initialize egg data */
 	egg_init();
-	
+
 	/* Set default snake speed and legnth */
 	snake_speed = SNAKE_SPEED_DEFAULT;
 	snake_length = SNAKE_LENGTH_DEFAULT;
-	
+
 	/* Initialize co-ordinates of head */
 	head.eye_size=2.0;
 	head.eye[0].x=0.5;
@@ -119,7 +119,7 @@ void snake_init(void)
 	head.direction = HEAD_DIRECTION_DEFAULT;
 
 	/* Initialize co-ordinates of body with default length */
-	
+
 	body = (snake_body*)realloc(body,snake_length*sizeof(snake_body));
 	if(!body)
 	{
@@ -143,6 +143,7 @@ void snake_init(void)
 	body[0].direction = RIGHT;
 
 	body[0].next = NULL;
+
 	/* Set snake as alive */
 	dead = NO;
 
@@ -163,7 +164,7 @@ static void egg_init(void)
 
 	egg.position.x = EGG_POS_X_DEFAULT;
 	egg.position.y = EGG_POS_Y_DEFAULT;
-	
+
 	egg_size = 4.0;
 	/* Set egg as not HIT */
 	egg_hit = NO;
