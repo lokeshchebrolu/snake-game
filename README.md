@@ -2,7 +2,7 @@
 Vintage Egg eating snake game in 2D
 
 <p>
-	<img src="./images/readme/snake_game2d_thumbnail.jpg" width="250x" height="217")
+	<img src="./images/readme/snake_game2d_thumbnail.jpg" width="640" height="360")
 </p>
 
 Development is being done completely in C language.
