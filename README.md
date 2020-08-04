@@ -1,8 +1,8 @@
 # snake-game
-Designing Nokia Mobile Egg eating snake game
+Vintage Egg eating snake game in 2D
 
 <p>
-	<img src="./images/readme/nokia_snake_game.png" width="250x" height="217")
+	<img src="./images/readme/snake_game2d_thumbnail.jpg" width="250x" height="217")
 </p>
 
 Development is being done completely in C language.
@@ -16,3 +16,4 @@ Host Operating system : Linux
 
 Packages to be installed : GLUT, GCC
 
+A sample demo play link: https://www.youtube.com/embed/rw9PA6JAMwI 
